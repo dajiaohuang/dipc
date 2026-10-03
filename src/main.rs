@@ -82,6 +82,15 @@ fn main() -> io::Result<()> {
         _ => {}
     }
 
+    if output_to_stdout && cli.dir_output.is_some() {
+        eprintln!(
+            "{}",
+            "Cannot combine `--output -` with `--dir-output`"
+                .if_supports_color(owo_colors::Stream::Stderr, |text| text.red())
+        );
+        std::process::exit(127)
+    }
+
     if !output_to_stdout {
         println!(
             "Color palette: {}\nStyles: {:?}\nDeltaE method: {}",

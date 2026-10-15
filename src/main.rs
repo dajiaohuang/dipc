@@ -82,15 +82,6 @@ fn main() -> io::Result<()> {
         _ => {}
     }
 
-    if output_to_stdout && cli.dir_output.is_some() {
-        eprintln!(
-            "{}",
-            "Cannot combine `--output -` with `--dir-output`"
-                .if_supports_color(owo_colors::Stream::Stderr, |text| text.red())
-        );
-        std::process::exit(127)
-    }
-
     if !output_to_stdout {
         println!(
             "Color palette: {}\nStyles: {:?}\nDeltaE method: {}",
@@ -98,7 +89,7 @@ fn main() -> io::Result<()> {
         );
     }
     match &cli.dir_output {
-        Some(path) if !path.is_dir() => {
+        Some(path) if !output_to_stdout && !path.is_dir() => {
             eprintln!(
                 "Output directory \"{}\" does not exist.\nAttempting to create it.",
                 path.display()
@@ -278,12 +269,12 @@ fn main() -> io::Result<()> {
                     name.set_extension("png");
                 }
                 match &cli.dir_output {
-                    Some(path) => {
+                    Some(path) if !is_stdio(&name) => {
                         let mut output = path.clone();
                         output.push(name);
                         output
                     }
-                    None => {
+                    _ => {
                         let mut output = std::path::PathBuf::new();
                         output.push(name);
                         output
